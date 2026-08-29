@@ -1,0 +1,11 @@
+metric,value
+Control bad-review rate,0.75
+Treatment bad-review rate,0.6375
+Planning effect,-0.1125
+Alpha,0.05
+Target power,0.8
+Sample size per arm,262.0
+Total sample size,524.0
+Monte Carlo simulations,10000.0
+Estimated simulated power,0.7695
+Chi-square p-value,0.001435
