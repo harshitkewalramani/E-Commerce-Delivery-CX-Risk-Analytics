@@ -1,86 +1,91 @@
-# Used-Car Market Intelligence
+# E-Commerce Delivery & CX Risk Analytics
 
-I built this project to look at the used-car market from a business point of view: what is worth acquiring, how prices behave across segments, how accurately prices can be estimated, and which states look more promising for expansion.
+I built this project to understand how delivery reliability is connected to customer experience and whether delivery risk can be identified early enough for an operational team to act.
 
-## What I wanted to answer
+The analysis uses the Olist Brazilian e-commerce public dataset and combines delivery analysis, customer-review analysis, predictive risk modeling, Power BI, and a simulated A/B test.
 
-- Which brand × age × fuel segments look attractive for inventory acquisition?
-- Which segments show more stable pricing?
-- How well can used-car prices be modeled?
-- Which states look more promising for expansion?
+## Questions
+
+- How strongly are delivery delays associated with bad reviews?
+- Which categories and states show higher delivery risk?
+- Can customer-experience risk be identified before final delivery?
+- Which orders should be prioritized for intervention?
+- How could a proactive outreach experiment be designed?
 
 ## Tools
 
 - Python
 - SQL
-- Advanced Excel
 - Power BI
-- Tableau
+- Statistics
 - scikit-learn
+- A/B Testing
+- Monte Carlo Simulation
 
 ## What I did
 
-### 1. Inventory analysis
+### Delivery & customer experience
 
-I scored vehicle segments using observed price retention, selling price, listing volume and pricing stability.
+Starting from the Olist relational tables, I built a one-row-per-order analytical dataset after validating the joins and handling duplicate review records.
 
-The highest-ranked segment was:
+The final analytical cohort contained **95,832 delivered and reviewed orders**.
 
-**Toyota · 3–5 years · Diesel — 86.4/100**
+Late orders had a **54.1% bad-review rate**, compared with **9.2% for on-time orders**, giving a **5.86× rate ratio**.
 
-This was based on **15,244 CarDekho records**.
+### Early-warning risk model
 
-### 2. Price modeling
+I built a time-based early-warning model using information available before the final delivery outcome.
 
-I compared:
+The logistic early-warning model achieved a **ROC-AUC of 0.637** on the held-out period.
 
-- Linear Regression
-- Gradient Boosting
+The highest-risk 10% of scores had a **75.0% bad-review rate**, compared with **49.6% across the held-out test cohort**.
 
-The models were evaluated using **5-fold GroupKFold by vehicle model** to reduce leakage between related vehicle records.
+### Operational risk bands
 
-The final models reduced cross-validated MAE by **62% versus a fold-specific median-price baseline**.
+The held-out orders were divided into Standard, Elevated and High risk bands.
 
-### 3. Forecasting
+The High-risk group contained **128 orders** and had a **75.0% bad-review rate**.
 
-I also added a forecasting view for the Toyota + Diesel segment.
+This group also had an average seller-customer distance of approximately **809 km**.
 
-Because the dataset does not contain listing or sale dates, the forecast is an **age-trajectory projection**, rather than a calendar-time forecast.
+### A/B test design
 
-### 4. Power BI dashboard
+I designed a simulated proactive-outreach experiment for the high-risk cohort.
 
-The dashboard brings together:
+The planning assumptions were:
 
-- pricing trends
-- segment attractiveness
-- price forecasts
-- inventory acquisition signals
-- state expansion opportunity
+- Control bad-review rate: 75%
+- Assumed treatment bad-review rate: 63.75%
+- α = 0.05
+- Target power = 80%
+- Required sample: 262 orders per arm
+- Total sample: 524 orders
+- 10,000 Monte Carlo simulations
+- Chi-square significance testing
 
-### 5. Tableau
+The **15% reduction is an assumed planning effect**, not an observed result from real customers.
 
-I rebuilt the inventory-scoring dashboard in Tableau Public and added a geographic view of state-level opportunity scores.
+## Business takeaway
 
-The highest-ranked state in the expansion snapshot was:
+The analysis suggests that delivery reliability is strongly associated with customer-review outcomes, while the early-warning model can be used to prioritize a smaller set of high-risk orders for operational attention.
 
-**Uttar Pradesh — 86.7/100**
+The next step would be testing whether proactive outreach actually improves customer outcomes rather than treating the simulated experiment as proof of impact.
 
-This should be treated as a directional supply-potential proxy rather than a forecast of future inventory.
+## Limitations
 
-## Key business takeaways
-
-**What to acquire:** Toyota · 3–5 years · Diesel
-
-**Where to focus:** Uttar Pradesh
-
-**What to price cautiously:** Ford · 3–5 years · Diesel, which showed higher pricing variability and should be reviewed manually.
+- Olist is a historical dataset rather than a live logistics feed.
+- The early-warning checkpoint is reconstructed from historical timestamps.
+- Geographic distance is estimated from ZIP-prefix coordinates.
+- Review score is used as a proxy for customer experience.
+- The predictive model is intended for prioritization and triage, not causal inference.
+- The A/B test is simulated and uses an assumed treatment effect.
 
 ## Project structure
 
 ```text
-notebooks/      Python analysis
-sql/            SQL queries
-tableau/        Tableau workbook
-powerbi/        Dashboard files/screenshots
-outputs/        Charts and model results
-data/           Data notes / source information
+notebooks/      Python analysis and modeling
+ab_testing/     Experiment design and simulation
+powerbi/        Power BI-ready data and dashboard material
+outputs/        Final charts and analytical outputs
+data/           Data documentation
+sql/            SQL analysis
